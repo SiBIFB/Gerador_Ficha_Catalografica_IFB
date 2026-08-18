@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador Ficha Catalográfica IFB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom details animation */
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 antialiased min-h-screen py-10 px-4 sm:px-6">
+
+    <main class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg border-t-8 border-emerald-600 overflow-hidden">
+        <div class="p-8 sm:p-10">
+            
+            <header class="mb-8 flex flex-col items-center text-center space-y-6">
+                <img src="https://nead.ifb.edu.br/pluginfile.php/1/theme_adaptable/logo/1664455840/Marcas_IFB_horizontal_color.png" 
+                     alt="Logo IFB" class="w-48 object-contain">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">Gerador de Ficha Catalográfica IFB</h1>
+                    <a href="https://drive.google.com/file/d/1FVfbPJYKqhIhz9_aXqgrkD3e5Qp94EPf/view?usp=sharing" 
+                       target="_blank" 
+                       class="inline-flex items-center text-emerald-600 hover:text-emerald-800 font-medium transition-colors">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Orientações para preenchimento
+                    </a>
+                </div>
+            </header>
+
+            <form id="fichaForm" class="space-y-8">
+                
+                <section class="bg-emerald-50 rounded-lg p-6 border border-emerald-100">
+                    <h2 class="text-lg font-semibold text-emerald-900 mb-4 border-b border-emerald-200 pb-2">Dados do Autor(a) Principal</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1" for="nome">Nome completo (exceto último sobrenome)</label>
+                            <input type="text" id="nome" required maxlength="100" placeholder="Ex: Maria Aquino Gomes da" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1" for="sobrenome">Último sobrenome</label>
+                            <input type="text" id="sobrenome" required maxlength="100" placeholder="Ex: Silva" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
+                        </div>
+                    </div>
+
+                    <!-- Expandable Other Authors -->
+                    <details class="mt-4 group">
+                        <summary class="flex items-center text-sm font-medium text-emerald-700 hover:text-emerald-900 outline-none">
+                            <svg class="w-4 h-4 mr-2 transform group-open:rotate-90 transition-transform" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                            Clique aqui para inserir demais autores (se houver)
+                        </summary>
+                        <div class="pt-4 space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nome completo (2º autor)</label>
+                                    <input type="text" id="nome2" placeholder="Ex: Juliano Pereira" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Último sobrenome (2º autor)</label>
+                                    <input type="text" id="sobrenome2" placeholder="Ex: Castelo Branco" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nome completo (3º autor)</label>
+                                    <input type="text" id="nome3" placeholder="Ex: Iris Almeida" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Último sobrenome (3º autor)</label>
+                                    <input type="text" id="sobrenome3" placeholder="Ex: Ferreira" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nome completo (4º autor)</label>
+                                    <input type="text" id="nome4" placeholder="Ex: Crono Marle" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Último sobrenome (4º autor)</label>
+                                    <input type="text" id="sobrenome4" placeholder="Ex: Snes" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nome completo (5º autor)</label>
+                                    <input type="text" id="nome5" placeholder="Ex: Lucca Ashtear" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Último sobrenome (5º autor)</label>
+                                    <input type="text" id="sobrenome5" placeholder="Ex: Zeal" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </section>
+
+                <section class="bg-emerald-50 rounded-lg p-6 border border-emerald-100">
+                    <h2 class="text-lg font-semibold text-emerald-900 mb-4 border-b border-emerald-200 pb-2">Dados do Trabalho e Orientação</h2>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1" for="titulo">
+                            Título do trabalho: subtítulo (maiúsculas apenas 1ª letra e nomes próprios)
+                            <span title="Se houver um subtítulo este deverá ser colocado após o título separado pelo sinal de dois pontos. Utilize letras maiúsculas somente para início do título ou quando tratar-se de nome próprio." class="ml-1 text-gray-400 hover:text-gray-600 cursor-help"><svg class="inline w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg></span>
+                        </label>
+                        <input type="text" id="titulo" required maxlength="200" placeholder="Ex: Machado de Assis: vida e obra" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
+                    </div>
+
+                    <div class="mb-6 space-y-4">
+                        <h3 class="text-sm font-semibold text-gray-700">Tipo de Trabalho <span title="Selecione o Tipo de trabalho produzido e o curso no respectivo campus." class="ml-1 text-gray-400 hover:text-gray-600 cursor-help"><svg class="inline w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg></span></h3>
+                        
+                        <!-- TCC Graduação -->
+                        <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                            <div class="flex items-center">
+                                <input type="radio" id="grad" name="trabalho" value="tcc" required class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
+                                <label for="grad" class="ml-2 text-sm font-medium text-gray-700 whitespace-nowrap">TCC — Graduação em:</label>
+                            </div>
+                            <select id="cursoTCC" required disabled class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm bg-white disabled:bg-gray-100 disabled:text-gray-400 w-full sm:w-auto">
+                                <option value="">(Selecione o curso)</option> 
+                                <optgroup label="Campus Brasília">
+                                    <option value="Brasília|Licenciatura em Dança">Licenciatura em Dança</option>
+                                    <option value="Brasília|Tecnologia em Eventos">Tecnologia em Eventos</option>
+                                    <option value="Brasília|Tecnologia em Gestão Pública">Tecnologia em Gestão Pública</option>
+                                    <option value="Brasília|Tecnologia em Processos Gerenciais">Tecnologia em Processos Gerenciais</option>
+                                    <option value="Brasília|Tecnologia em Sistemas para Internet">Tecnologia em Sistemas para Internet</option>
+                                </optgroup>
+                                <optgroup label="Campus Ceilândia">
+                                    <option value="Ceilândia|Licenciatura em Letras — Língua espanhola">Licenciatura em Letras — Língua espanhola</option>  
+                                    <option value="Ceilândia|Segunda Licenciatura em Letras-Português">Segunda Licenciatura em Letras-Português</option>
+                                </optgroup>
+                                <optgroup label="Campus Estrutural">
+                                    <option value="Estrutural|Licenciatura em Matemática">Licenciatura em Matemática</option>
+                                </optgroup>
+                                <optgroup label="Campus Gama">
+                                    <option value="Gama|Bacharelado em Administração">Bacharelado em Administração</option>
+                                    <option value="Gama|Licenciatura em Química">Licenciatura em Química</option>
+                                    <option value="Gama|Tecnologia em Alimentos">Tecnologia em Alimentos</option>
+                                    <option value="Gama|Tecnologia em Logística">Tecnologia em Logística</option>
+                                </optgroup>
+                                <optgroup label="Campus Planaltina">
+                                    <option value="Planaltina|Licenciatura em Biologia">Licenciatura em Biologia</option>
+                                    <option value="Planaltina|Tecnologia em Agroecologia">Tecnologia em Agroecologia</option>
+                                    <option value="Planaltina|Bacharelado em Agronomia">Bacharelado em Agronomia</option>
+                                </optgroup>
+                                <optgroup label="Campus Riacho Fundo">
+                                    <option value="Riacho Fundo|Licenciatura em Geografia">Licenciatura em Geografia</option>
+                                    <option value="Riacho Fundo|Licenciatura em Letras-Inglês">Licenciatura em Letras-Inglês</option>
+                                    <option value="Riacho Fundo|Tecnologia em Gastronomia">Tecnologia em Gastronomia</option>
+                                    <option value="Riacho Fundo|Tecnologia em Hotelaria">Tecnologia em Hotelaria</option>
+                                </optgroup>
+                                <optgroup label="Campus Samambaia">
+                                    <option value="Samambaia|Licenciatura em Educação Profissional">Licenciatura em Educação Profissional</option>
+                                    <option value="Samambaia|Tecnologia em Design de Produto">Tecnologia em Design de Produto</option>
+                                    <option value="Samambaia|Bacharelado em Engenharia Civil">Bacharelado em Engenharia Civil</option>
+                                </optgroup>
+                                <optgroup label="Campus São Sebastião">
+                                    <option value="São Sebastião|Licenciatura em Letras — Língua portuguesa">Licenciatura em Letras — Língua portuguesa</option>
+                                    <option value="São Sebastião|Licenciatura em Pedagogia">Licenciatura em Pedagogia</option>
+                                    <option value="São Sebastião|Tecnologia em Análise e Desenvolvimento de Sistemas">Tecnologia em Análise e Desenvolvimento de Sistemas</option>
+                                    <option value="São Sebastião|Tecnologia em Secretariado">Tecnologia em Secretariado</option>
+                                </optgroup>
+                                <optgroup label="Campus Taguatinga">
+                                    <option value="Taguatinga|Bacharelado em Ciência da Computação">Bacharelado em Ciência da Computação</option>
+                                    <option value="Taguatinga|Licenciatura em Computação">Licenciatura em Computação</option>
+                                    <option value="Taguatinga|Licenciatura em Física">Licenciatura em Física</option>
+                                    <option value="Taguatinga|Tecnologia em Automação Industrial">Tecnologia em Automação Industrial</option>
+                                    <option value="Taguatinga|Tecnologia em Design de Moda">Tecnologia em Design de Moda</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <!-- Especialização -->
+                        <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                            <div class="flex items-center">
+                                <input type="radio" id="espec" name="trabalho" value="espec" class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
+                                <label for="espec" class="ml-2 text-sm font-medium text-gray-700 whitespace-nowrap">TCC — Especialização em:</label>
+                            </div>
+                            <select id="cursoESP" disabled class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm bg-white disabled:bg-gray-100 disabled:text-gray-400 w-full sm:w-auto">
+                                <option value="">(Selecione o curso)</option>
+                                <optgroup label="Campus Brasília">
+                                    <option value="Brasília|Docência para a Educação Profissional e Tecnológica">Docência para a Educação Profissional e Tecnológica</option>
+                                    <option value="Brasília|Gestão Pública: governança e políticas públicas">Gestão Pública: governança e políticas públicas</option>
+                                </optgroup>
+                                <optgroup label="Campus Ceilândia">
+                                    <option value="Ceilândia|Ciências Políticas com foco na atuação da polícia jurídica">Ciências Políticas com foco na atuação da polícia jurídica</option>  
+                                </optgroup>
+                                <optgroup label="Campus Estrutural">
+                                    <option value="Estrutural|Governança Territorial para o desenv. saudável e sustentável">Governança Territorial para o desenv. saudável e sustentável</option>
+                                </optgroup>
+                                <optgroup label="Campus Gama">
+                                    <option value="Gama|Ensino de Ciências e Matemática para o Ensino Fundamental">Ensino de Ciências e Matemática para o Ensino Fundamental</option>
+                                </optgroup>
+                                <optgroup label="Campus Planaltina">
+                                    <option value="Planaltina|Docência para a Educação Profissional e Tecnológica">Docência para a Educação Profissional e Tecnológica</option>
+                                    <option value="Planaltina|Gestão na Educação Profissional e Tecnológica">Gestão na Educação Profissional e Tecnológica</option>
+                                    <option value="Planaltina|Gestão da Escola Pública de Ensino Médio">Gestão da Escola Pública de Ensino Médio</option>
+                                </optgroup>
+                                <optgroup label="Campus Recanto das Emas">
+                                    <option value="Recanto das Emas|Docência para a Educação Profissional e Tecnológica">Docência para a Educação Profissional e Tecnológica</option>
+                                </optgroup>
+                                <optgroup label="Campus Riacho Fundo">
+                                    <option value="Riacho Fundo|Ensino de Humanidades e Linguagem">Ensino de Humanidades e Linguagem</option>
+                                </optgroup>
+                                <optgroup label="Campus Samambaia">
+                                    <option value="Samambaia|Docência para a Educação Profissional e Tecnológica">Docência para a Educação Profissional e Tecnológica</option>
+                                    <option value="Samambaia|Gerenciamento Ambiental">Gerenciamento Ambiental</option>
+                                </optgroup>
+                                <optgroup label="Campus São Sebastião">
+                                    <option value="São Sebastião|Docência para a Educação Profissional e Tecnológica">Docência para a Educação Profissional e Tecnológica</option>
+                                    <option value="São Sebastião|Educação, Meio Ambiente e Sociedade">Educação, Meio Ambiente e Sociedade</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- Mestrado -->
+                        <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                            <div class="flex items-center">
+                                <input type="radio" id="dissert" name="trabalho" value="mestrado" class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
+                                <label for="dissert" class="ml-2 text-sm font-medium text-gray-700 whitespace-nowrap">Dissertação — Mestrado em:</label>
+                            </div>
+                            <select id="cursoMES" disabled class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm bg-white disabled:bg-gray-100 disabled:text-gray-400 w-full sm:w-auto">
+                                <option value="">(Selecione o curso)</option>
+                                <optgroup label="Campus Brasília">
+                                    <option value="Brasília|Educação Profissional e Tecnológica em Rede Nacional">Educação Profissional e Tecnológica em Rede Nacional</option>
+                                </optgroup>
+                                <optgroup label="Campus Riacho Fundo">
+                                    <option value="Riacho Fundo|Ensino de Geografia em Rede Nacional">Ensino de Geografia em Rede Nacional</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1" for="nome_ori">Nome completo do orientador(a)</label>
+                            <input type="text" id="nome_ori" required maxlength="100" placeholder="Ex: Luciana Diniz de" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1" for="sobrenome_ori">Último sobrenome do orientador(a)</label>
+                            <input type="text" id="sobrenome_ori" required maxlength="100" placeholder="Ex: Albuquerque" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
+                        </div>
+                    </div>
+
+                    <details class="mb-6 group">
+                        <summary class="flex items-center text-sm font-medium text-emerald-700 hover:text-emerald-900 outline-none cursor-pointer">
+                            <svg class="w-4 h-4 mr-2 transform group-open:rotate-90 transition-transform" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                            Clique aqui para inserir o(a) Coorientador(a) (se houver)
+                        </summary>
+                        <div class="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Nome completo do coorientador(a)</label>
+                                <input type="text" id="nome_coori" placeholder="Ex: Luís Alvarenga" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Último sobrenome do coorientador(a)</label>
+                                <input type="text" id="sobrenome_coori" placeholder="Ex: Brito" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm">
+                            </div>
+                        </div>
+                    </details>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1" for="ano">Ano de Defesa</label>
+                            <input type="text" id="ano" required maxlength="4" pattern="\d{4}" placeholder="Ex: 2023" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1" for="pags">Nº de folhas</label>
+                            <input type="number" id="pags" required min="1" max="999" placeholder="Ex: 66" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
+                        </div>
+                        <div>
+                            <label class="flex items-center text-sm font-semibold text-gray-700 mb-1" for="ilustracao">
+                                Ilustrações
+                                <span title="Selecione a opção correspondente às ilustrações do seu trabalho." class="ml-1 text-gray-400 hover:text-gray-600 cursor-help"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg></span>
+                            </label>
+                            <select id="ilustracao" required class="w-full px-4 py-2 bg-white border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow text-sm">
+                                <option value="">(Selecione a opção)</option> 
+                                <option value="Sem ilustrações">Sem ilustrações</option>
+                                <option value="Ilustrações em preto e branco">Ilustrações em preto e branco</option>
+                                <option value="Ilustrações coloridas">Ilustrações coloridas</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                    <label class="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                        Palavras-chave (mín. 3, máx. 5)
+                        <span title="As palavras-chave devem aparecer em ordem decrescente de importância, não sendo redundantes ou repetitivas. É obrigatório inserir pelo menos três palavras-chave." class="ml-2 text-gray-400 hover:text-gray-600 cursor-help"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg></span>
+                    </label>
+                    <div class="space-y-3">
+                        <div class="flex items-center"><span class="w-6 font-semibold text-gray-500">1.</span><input type="text" id="assunto1" required maxlength="100" placeholder="Ex: Conhecimento" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm"></div>
+                        <div class="flex items-center"><span class="w-6 font-semibold text-gray-500">2.</span><input type="text" id="assunto2" required maxlength="100" placeholder="Ex: Informação" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm"></div>
+                        <div class="flex items-center"><span class="w-6 font-semibold text-gray-500">3.</span><input type="text" id="assunto3" required maxlength="100" placeholder="Ex: Serendipidade" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm"></div>
+                        <div class="flex items-center"><span class="w-6 font-semibold text-gray-500">4.</span><input type="text" id="assunto4" maxlength="100" placeholder="Ex: Metodologia científica" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm bg-white"></div>
+                        <div class="flex items-center"><span class="w-6 font-semibold text-gray-500">5.</span><input type="text" id="assunto5" maxlength="100" placeholder="Ex: Trabalho de conclusão de curso" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm bg-white"></div>
+                    </div>
+                </section>
+
+                <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <button type="reset" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors">Limpar</button>
+                    <button type="submit" class="px-8 py-2 bg-emerald-600 text-white rounded-md shadow-sm hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 font-medium transition-colors">Gerar PDF</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Setup Logic for Work Type Selection Dropdowns
+        const radiosTrabalho = document.querySelectorAll('input[name="trabalho"]');
+        const selectTCC = document.getElementById('cursoTCC');
+        const selectESP = document.getElementById('cursoESP');
+        const selectMES = document.getElementById('cursoMES');
+
+        radiosTrabalho.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const tipo = this.value;
+                
+                // Toggle state
+                selectTCC.disabled = tipo !== 'tcc';
+                selectESP.disabled = tipo !== 'espec';
+                selectMES.disabled = tipo !== 'mestrado';
+
+                // Toggle required
+                selectTCC.required = tipo === 'tcc';
+                selectESP.required = tipo === 'espec';
+                selectMES.required = tipo === 'mestrado';
+
+                // Reset unchecked selections
+                if (tipo !== 'tcc') selectTCC.value = '';
+                if (tipo !== 'espec') selectESP.value = '';
+                if (tipo !== 'mestrado') selectMES.value = '';
+            });
+        });
+
+        // Helper function for Roman numerals (used in secondary entries)
+        const getRomanNum = (num) => {
+            const romans = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+            return romans[num] || "";
+        };
+
+        document.getElementById('fichaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // 1. Gather Basic Author Information
+            const nome = document.getElementById('nome').value.trim();
+            const sobrenome = document.getElementById('sobrenome').value.trim();
+            
+            const nome2 = document.getElementById('nome2').value.trim();
+            const sobrenome2 = document.getElementById('sobrenome2').value.trim();
+            const nome3 = document.getElementById('nome3').value.trim();
+            const sobrenome3 = document.getElementById('sobrenome3').value.trim();
+            const nome4 = document.getElementById('nome4').value.trim();
+            const sobrenome4 = document.getElementById('sobrenome4').value.trim();
+            const nome5 = document.getElementById('nome5').value.trim();
+            const sobrenome5 = document.getElementById('sobrenome5').value.trim();
+
+            const titulo = document.getElementById('titulo').value.trim();
+            const ano = document.getElementById('ano').value.trim();
+            const pags = document.getElementById('pags').value.trim();
+
+            // Advisors
+            const nomeOri = document.getElementById('nome_ori').value.trim();
+            const sobrenomeOri = document.getElementById('sobrenome_ori').value.trim();
+            const nomeCoori = document.getElementById('nome_coori').value.trim();
+            const sobrenomeCoori = document.getElementById('sobrenome_coori').value.trim();
+
+            // 2. Gather Course Details & Type
+            let tipoTrabalhoRaw = document.querySelector('input[name="trabalho"]:checked').value;
+            let activeSelect = tipoTrabalhoRaw === 'tcc' ? selectTCC : (tipoTrabalhoRaw === 'espec' ? selectESP : selectMES);
+            let optionData = activeSelect.value.split('|'); // Data is formatted as City|CourseName
+            let cityRaw = optionData[0];
+            let cursoName = optionData[1];
+            
+            let local = `${cityRaw}, DF`;
+            let cidade = `${cityRaw}, DF`;
+            let campus = `Campus ${cityRaw}, `;
+
+            // Build 'trab' descriptive string exactly matching the original output behavior
+            let trabStr = "";
+            if (tipoTrabalhoRaw === 'tcc') {
+                trabStr = `Trabalho de Conclusão de Curso (${cursoName}) — ${campus}Instituto Federal de Brasília, ${cidade}, `;
+            } else if (tipoTrabalhoRaw === 'espec') {
+                trabStr = `Trabalho de Conclusão de Curso (Especialização em ${cursoName}) — ${campus}Instituto Federal de Brasília, ${cidade}, `;
+            } else if (tipoTrabalhoRaw === 'mestrado') {
+                trabStr = `Dissertação (Mestrado profissional em ${cursoName}) — ${campus}Instituto Federal de Brasília, ${cidade}, `;
+            }
+
+            // 3. Process Illustrations Selection
+            let ilustracaoRaw = document.getElementById('ilustracao').value;
+            let ilustracaoStr = "";
+            if (ilustracaoRaw === "Ilustrações em preto e branco") ilustracaoStr = ": il. ";
+            if (ilustracaoRaw === "Ilustrações coloridas") ilustracaoStr = ": il. color. ";
+
+            // Build the string representation for Authors in Main Body
+            let nome11 = `${nome} ${sobrenome}`;
+            if (nome4 || nome5) {
+                nome11 = `${nome} ${sobrenome} ... [et al.]`;
+            } else if (nome3) {
+                nome11 = `${nome} ${sobrenome}, ${nome2} ${sobrenome2}, ${nome3} ${sobrenome3}`;
+            } else if (nome2) {
+                nome11 = `${nome} ${sobrenome}, ${nome2} ${sobrenome2}`;
+            }
+
+            // Build string representation for Advisors in Main Statement
+            let orientacao1 = `orientação ${nomeOri} ${sobrenomeOri}`;
+            if (nomeCoori) {
+                orientacao1 += ` ; coorientação ${nomeCoori} ${sobrenomeCoori}`;
+            }
+
+            // Build string representation for Advisors in Notes Area
+            let orientacao = `Orientador(a): ${nomeOri} ${sobrenomeOri}`;
+            if (nomeCoori) {
+                orientacao += ` ; Coorientador(a): ${nomeCoori} ${sobrenomeCoori}`;
+            }
+
+            // Build Keywords String
+            let assuntosStr = "";
+            let keyCount = 1;
+            ['assunto1', 'assunto2', 'assunto3', 'assunto4', 'assunto5'].forEach(id => {
+                let val = document.getElementById(id).value.trim();
+                if (val) {
+                    assuntosStr += `${keyCount}. ${val}. `;
+                    keyCount++;
+                }
+            });
+
+            // Build Secondary Entries string with dynamic Roman numeral incrementing
+            let secundariaStr = "";
+            let romanIdx = 1;
+
+            if (nome2) { secundariaStr += ` ${getRomanNum(romanIdx)}. ${sobrenome2}, ${nome2}.`; romanIdx++; }
+            if (nome3) { secundariaStr += ` ${getRomanNum(romanIdx)}. ${sobrenome3}, ${nome3}.`; romanIdx++; }
+            if (nome4) { secundariaStr += ` ${getRomanNum(romanIdx)}. ${sobrenome4}, ${nome4}.`; romanIdx++; }
+            if (nome5) { secundariaStr += ` ${getRomanNum(romanIdx)}. ${sobrenome5}, ${nome5}.`; romanIdx++; }
+            
+            if (nomeOri) { secundariaStr += ` ${getRomanNum(romanIdx)}. ${sobrenomeOri}, ${nomeOri}, orient.`; romanIdx++; }
+            if (nomeCoori) { secundariaStr += ` ${getRomanNum(romanIdx)}. ${sobrenomeCoori}, ${nomeCoori}, coorient.`; romanIdx++; }
+            
+            secundariaStr += ` ${getRomanNum(romanIdx)}. Instituto Federal de Brasília.`; romanIdx++;
+            secundariaStr += ` ${getRomanNum(romanIdx)}. Título.`;
+
+            // Assemble the massive paragraph block to exactly mimic library spacing norms
+            // We use standard jsPDF splitTextToSize to constrain width to 100mm.
+            // The prefixed spaces ("      ") replicate standard hanging indent spacing logic utilized in the older system.
+            
+            let bibliographicBodyStr = 
+                '      ' + titulo + ' / ' + nome11 + ' ; ' + orientacao1 + '. — ' + local + ': ' + ano + '.\n' +
+                '      ' + pags + ' f. ' + ilustracaoStr + '; 30 cm.\n\n' +
+                '      ' + trabStr + ano + '.\n' +
+                '      ' + orientacao + '.\n\n' +
+                '      ' + assuntosStr + secundariaStr;
+
+            doc.setFont("times");
+            doc.setFontSize(9);
+
+            let textLinesArray = doc.splitTextToSize(bibliographicBodyStr, 100);
+
+            // Draw boundaries and add texts exactly aligning to standard layout formats
+            // The coordinates are precise mapping of the previous setup parameters (A4 center bottom layout)
+            doc.rect(42, 180, 125, 75); // Drawing the outline square containing the content
+            doc.text(60, 185, sobrenome + ', ' + nome + '.'); // Top main author entry
+            doc.text(60, 190, textLinesArray); // Bibliographic paragraph block
+
+            doc.text(42, 260, "Ficha catalográfica elaborada por sistema com dados fornecidos pelo(a) autor(a)");
+            doc.text(42, 265, "SISTEMA DE BIBLIOTECAS DO INSTITUTO FEDERAL DE BRASÍLIA");
+
+            // Finalizing generation
+            doc.save('ficha_catalografica_IFB.pdf');
+        });
+    </script>
+</body>
+</html>
