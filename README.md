@@ -192,4 +192,4 @@ Este projeto é fornecido como ferramenta auxiliar para a comunidade acadêmica 
 
 **Desenvolvido com ❤️ para facilitar a vida dos estudantes do IFB**
 
-*Última atualização: 2024*
+*Última atualização: 2026*
