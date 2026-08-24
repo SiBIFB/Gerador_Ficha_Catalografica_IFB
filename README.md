@@ -1,4 +1,5 @@
 # 📚 Gerador de Ficha Catalográfica IFB
+> (Descrição feita pela IA Copilot embutido no Github e adaptado por Daniel R.G.)
 
 Um aplicativo web interativo e intuitivo para gerar fichas catalográficas de acordo com os padrões do Instituto Federal de Brasília (IFB). A ferramenta automatiza o processo de preenchimento e formatação de fichas catalográficas para trabalhos acadêmicos, gerando arquivos PDF prontos para uso.
 
