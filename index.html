@@ -30,7 +30,7 @@
                    target="_blank" 
                    class="inline-flex items-center text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Orientações para preenchimento
+                    Orientações para preenchimento e aplicação
                 </a>
             </div>
 
@@ -314,6 +314,124 @@
     </main>
 
     <script>
+        const formatName = (text) => {
+            if (!text) return text;
+            const prepositions = ["da", "de", "di", "do", "du", "das", "dos", "e"];
+            return text.toLowerCase().split(/\s+/).map((word, index) => {
+                if (word.length === 0) return word;
+                if (index !== 0 && prepositions.includes(word)) {
+                    return word;
+                }
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join(' ');
+        };
+
+        const formatTitle = (text) => {
+            if (!text) return text;
+            const hasLetters = /\p{L}/u.test(text);
+            if (!hasLetters) return text;
+
+            const isAllUpperCase = text === text.toUpperCase();
+            const isAllLowerCase = text === text.toLowerCase();
+
+            let formatted = text;
+            
+            if (isAllUpperCase || isAllLowerCase) {
+                formatted = text.toLowerCase();
+                formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+            } else {
+                formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+            }
+            return formatted;
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const notifyCorrection = (el, customMsg = null) => {
+                // Adiciona cores de alerta suave (amarelo/âmbar)
+                el.classList.add('bg-amber-50', 'border-amber-400', 'transition-colors', 'duration-500');
+                el.classList.remove('border-gray-300');
+                
+                // Verifica se já existe a mensagem para não duplicar
+                let msg = el.nextElementSibling;
+                if (!msg || !msg.classList.contains('correction-msg')) {
+                    msg = document.createElement('p');
+                    msg.className = 'correction-msg text-xs text-amber-700 mt-1.5 font-medium transition-opacity duration-500';
+                    msg.innerHTML = customMsg || '✨ Ajustamos as letras maiúsculas para o padrão da ABNT. Por favor, confira se os nomes próprios e siglas continuam corretos.';
+                    el.parentNode.insertBefore(msg, el.nextSibling);
+                    
+                    // Remove o alerta visual após 6 segundos
+                    setTimeout(() => {
+                        el.classList.remove('bg-amber-50', 'border-amber-400');
+                        el.classList.add('border-gray-300');
+                        msg.style.opacity = '0';
+                        setTimeout(() => {
+                            if (msg.parentNode) msg.remove();
+                        }, 500);
+                    }, 6000);
+                }
+            };
+
+            const applySmartFormatting = (id, formatFn, customMsg = null, allowOverride = false) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                
+                el.addEventListener('blur', function() {
+                    const original = this.value.trim();
+                    if (!original) return;
+
+                    // Se a sobrescrita for permitida e o usuário insistir na grafia original...
+                    if (allowOverride && this.dataset.originalInput === original && this.dataset.formattedInput !== original) {
+                        // Remove alertas visuais imediatamente, pois ele corrigiu
+                        this.classList.remove('bg-amber-50', 'border-amber-400');
+                        this.classList.add('border-gray-300');
+                        const msgEl = this.nextElementSibling;
+                        if (msgEl && msgEl.classList.contains('correction-msg')) {
+                            msgEl.style.opacity = '0';
+                            setTimeout(() => { if (msgEl.parentNode) msgEl.remove(); }, 500);
+                        }
+                        return;
+                    }
+
+                    const formatted = formatFn(original);
+                    
+                    if (original !== formatted) {
+                        // Salva na memória o que ele tentou digitar e o que o sistema gerou (se permitido)
+                        if (allowOverride) {
+                            this.dataset.originalInput = original;
+                            this.dataset.formattedInput = formatted;
+                        }
+                        
+                        this.value = formatted;
+                        notifyCorrection(this, customMsg);
+                    } else {
+                        this.value = original;
+                        // Atualiza a memória para não travar edições futuras legítimas (se permitido)
+                        if (allowOverride) {
+                            this.dataset.originalInput = original;
+                            this.dataset.formattedInput = original;
+                        }
+                    }
+                });
+            };
+
+            const nameFields = [
+                'nome', 'sobrenome', 'nome2', 'sobrenome2', 'nome3', 'sobrenome3',
+                'nome4', 'sobrenome4', 'nome5', 'sobrenome5', 
+                'nome_ori', 'sobrenome_ori', 'nome_coori', 'sobrenome_coori'
+            ];
+
+            // Aplica a formatação inteligente aos nomes (estrita, sem permitir sobrescrita)
+            nameFields.forEach(id => applySmartFormatting(id, formatName));
+
+            // Aplica a formatação inteligente ao título (estrita, sem permitir sobrescrita)
+            applySmartFormatting('titulo', formatTitle);
+
+            // Aplica a formatação inteligente às palavras-chave (com sobrescrita ativada e mensagem explicativa)
+            const keywordFields = ['assunto1', 'assunto2', 'assunto3', 'assunto4', 'assunto5'];
+            const keywordMsg = '✨ Formatação automática aplicada. Revise nomes próprios e siglas. Se for uma sigla (ex: IBGE), basta digitá-la novamente em maiúsculo para o sistema aceitar.';
+            keywordFields.forEach(id => applySmartFormatting(id, formatTitle, keywordMsg, true));
+        });
+
         // Setup Logic for Work Type Selection Dropdowns
         const radiosTrabalho = document.querySelectorAll('input[name="trabalho"]');
         const selectTCC = document.getElementById('cursoTCC');
