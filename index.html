@@ -346,7 +346,7 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            const notifyCorrection = (el, customMsg = null) => {
+            const notifyCorrection = (el, customMsg = null, duration = 7500) => {
                 // Adiciona cores de alerta suave (amarelo/âmbar)
                 el.classList.add('bg-amber-50', 'border-amber-400', 'transition-colors', 'duration-500');
                 el.classList.remove('border-gray-300');
@@ -359,7 +359,7 @@
                     msg.innerHTML = customMsg || '✨ Ajustamos as letras maiúsculas para o padrão da ABNT. Por favor, confira se os nomes próprios e siglas continuam corretos.';
                     el.parentNode.insertBefore(msg, el.nextSibling);
                     
-                    // Remove o alerta visual após 6 segundos
+                    // Remove o alerta visual após o tempo determinado (duration)
                     setTimeout(() => {
                         el.classList.remove('bg-amber-50', 'border-amber-400');
                         el.classList.add('border-gray-300');
@@ -367,11 +367,11 @@
                         setTimeout(() => {
                             if (msg.parentNode) msg.remove();
                         }, 500);
-                    }, 6000);
+                    }, duration);
                 }
             };
 
-            const applySmartFormatting = (id, formatFn, customMsg = null, allowOverride = false) => {
+            const applySmartFormatting = (id, formatFn, customMsg = null, allowOverride = false, duration = 7500) => {
                 const el = document.getElementById(id);
                 if (!el) return;
                 
@@ -402,7 +402,7 @@
                         }
                         
                         this.value = formatted;
-                        notifyCorrection(this, customMsg);
+                        notifyCorrection(this, customMsg, duration);
                     } else {
                         this.value = original;
                         // Atualiza a memória para não travar edições futuras legítimas (se permitido)
@@ -420,16 +420,16 @@
                 'nome_ori', 'sobrenome_ori', 'nome_coori', 'sobrenome_coori'
             ];
 
-            // Aplica a formatação inteligente aos nomes (estrita, sem permitir sobrescrita)
-            nameFields.forEach(id => applySmartFormatting(id, formatName));
+            // Aplica a formatação inteligente aos nomes (estrita, sem permitir sobrescrita, dura 7.5s)
+            nameFields.forEach(id => applySmartFormatting(id, formatName, null, false, 7500));
 
-            // Aplica a formatação inteligente ao título (estrita, sem permitir sobrescrita)
-            applySmartFormatting('titulo', formatTitle);
+            // Aplica a formatação inteligente ao título (estrita, sem permitir sobrescrita, dura 7.5s)
+            applySmartFormatting('titulo', formatTitle, null, false, 7500);
 
-            // Aplica a formatação inteligente às palavras-chave (com sobrescrita ativada e mensagem explicativa)
+            // Aplica a formatação inteligente às palavras-chave (com sobrescrita ativada e dura 9s)
             const keywordFields = ['assunto1', 'assunto2', 'assunto3', 'assunto4', 'assunto5'];
             const keywordMsg = '✨ Formatação automática aplicada. Revise nomes próprios e siglas. Se for uma sigla (ex: IBGE), basta digitá-la novamente em maiúsculo para o sistema aceitar.';
-            keywordFields.forEach(id => applySmartFormatting(id, formatTitle, keywordMsg, true));
+            keywordFields.forEach(id => applySmartFormatting(id, formatTitle, keywordMsg, true, 9000));
         });
 
         // Setup Logic for Work Type Selection Dropdowns
@@ -457,6 +457,54 @@
                 if (tipo !== 'espec') selectESP.value = '';
                 if (tipo !== 'mestrado') selectMES.value = '';
             });
+        });
+
+        // Intercept Enter key to navigate fields instead of submitting, except on the last keyword field
+        document.getElementById('fichaForm').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                
+                // Allow normal submission if the active element is a button
+                if (activeElement.tagName === 'BUTTON') return;
+                
+                // If it's a summary (the detail toggle), allow Enter to toggle it natively!
+                if (activeElement.tagName === 'SUMMARY') return;
+                
+                // Only allow Enter to submit if it's the very last keyword field (assunto5)
+                if (activeElement.id !== 'assunto5') {
+                    e.preventDefault();
+                    
+                    // Create an array of all potentially focusable elements, INCLUDING summary
+                    const focusableElements = Array.from(this.querySelectorAll('input:not([type="hidden"]), select, textarea, button, summary'));
+                    
+                    let currentIndex = focusableElements.indexOf(activeElement);
+                    
+                    if (currentIndex > -1) {
+                        let nextIndex = currentIndex + 1;
+                        let nextElement = focusableElements[nextIndex];
+                        
+                        // Robust visibility checker
+                        const isFocusable = (el) => {
+                            if (el.disabled) return false;
+                            // Check if it's inside a closed details tag (and is not the summary itself)
+                            const details = el.closest('details');
+                            if (details && !details.open && el.tagName !== 'SUMMARY') return false;
+                            // Final layout check
+                            return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+                        };
+                        
+                        // Find the next element that is actually focusable and visible
+                        while (nextElement && !isFocusable(nextElement)) {
+                            nextIndex++;
+                            nextElement = focusableElements[nextIndex];
+                        }
+                        
+                        if (nextElement) {
+                            nextElement.focus();
+                        }
+                    }
+                }
+            }
         });
 
         // Helper function for Roman numerals (used in secondary entries)
